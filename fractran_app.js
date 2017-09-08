@@ -4,13 +4,16 @@ var $$ = document.querySelectorAll.bind(document);
 
 var Fractran = {
     check_error(code_text) {
-        var fracs = code_text.split(',');
+        var fracs_text = code_text.replace(/[,\s]+/g, ',')
+        var fracs = fracs_text.split(',');
+        console.log(fracs_text)
+        console.log(fracs)
         var errors = fracs.filter(
             s => {
-                var v = /[123456789]\d*\/[123456789]\d*/.test(s);
-                if (!v) console.log(s);
+                var v = /[123456789]\d*\/[123456789]\d*/.test(s);                
                 return !v;
             })
+        console.log(errors);
         return errors;
     }
 }
@@ -18,6 +21,7 @@ var Fractran = {
 var app = new Vue({
     el: '#fractran',
     methods: {
+        math: s=> katex.renderToString(s),
         toggle_code_mode() {
             if(this.code_mode == 0){
                 var code_text = $('#code_text').value;            
@@ -68,11 +72,13 @@ async function fetch_examples(file_name) {
         console.log("unable to fetch examples", e)
     }
 }
-$('#code_text').addEventListener('keypress', e => {
-    var valid = "0123456789,/\x00\x08";
+
+var input_only = (e, chars) => {
+    var valid = chars+" \r\n\x00\x08";
     var k = String.fromCharCode(e.which);
-    if (e.shiftKey || e.altKey || e.metaKey || e.ctrlKey)
+    if (e.altKey || e.metaKey || e.ctrlKey)
         return;
     if (valid.indexOf(k) == -1) e.preventDefault();
-})
+}
+
 fetch_examples("example.json")
