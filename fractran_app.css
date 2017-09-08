@@ -1,0 +1,25 @@
+.code {
+    width: 90vw;
+    height: 10em;
+    background-color: #eee;
+    clear: both;
+    display: block;
+}
+
+
+/* from 
+https://stackoverflow.com/questions/13878772/how-to-display-classic-built-up-fractions-with-an-horizontal-line-in-css-jav 
+*/
+.fraction, .top, .bottom {
+    padding: 0 5px;    
+}
+
+.fraction {
+    display: inline-block;
+    text-align: center;    
+}
+
+.bottom{
+    border-top: 1px solid #000;
+    display: block;
+}

@@ -16,7 +16,40 @@
   <h1> Fractran interpreter</h1>
   <div style="clear: left"> </div>
 
+
   <div id="fractran">
+    <input type="text" v-bind:value="input.number" />
+    <div style="clear: left" />
+    <textarea id="code_text" v-if="code_mode==0" class="code">{{ code_text }}</textarea>
+    <div id="code" v-if="code_mode==1" class="code">
+
+      <span v-for="(f,i) in code">
+          <span class="fraction">              
+        <span class="top">{{f[0]}}</span>
+      <span class="bottom">{{f[1]}}</span>
+      </span>
+      <span v-if="i+1<code.length">,</span>
+      </span>
+
+
+    </div>
+    <button type='button' onclick="app.toggle_code_mode()">  
+      {{ code_modes[1-code_mode] }} 
+    </button>
+    <button type='button' onclick="app.run()">  
+        run
+      </button>
+    <div v-if="code_errors.length>0">
+      List of erros:
+      <ul>
+        <li v-for="e in code_errors">
+          {{ e }}
+        </li>
+      </ul>
+    </div>
+    <li v-for="ex in examples">
+      {{ ex }}
+    </li>
   </div>
   <script src="fractran_app.js">
   </script>
