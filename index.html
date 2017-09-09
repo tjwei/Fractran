@@ -10,8 +10,10 @@
   <link rel="stylesheet" type="text/css" href="fractran_app.css"> </link>
   <script src="https://unpkg.com/vue@2.4.2/dist/vue.min.js"></script>
   <script src="http://peterolson.github.com/BigInteger.js/BigInteger.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css" integrity="sha384-B41nY7vEWuDrE9Mr+J2nBL0Liu+nl/rBXTdpQal730oTHdlrlXHzYMOhDU60cwde" crossorigin="anonymous">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.js" integrity="sha384-L9gv4ooDLrYwW0QCM6zY3EKSSPrsuUncpx26+erN0pJX4wv1B1FzVW1SvpcJPx/8" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.css" integrity="sha384-B41nY7vEWuDrE9Mr+J2nBL0Liu+nl/rBXTdpQal730oTHdlrlXHzYMOhDU60cwde"
+    crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.8.3/katex.min.js" integrity="sha384-L9gv4ooDLrYwW0QCM6zY3EKSSPrsuUncpx26+erN0pJX4wv1B1FzVW1SvpcJPx/8"
+    crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -20,16 +22,17 @@
 
 
   <div id="fractran">
-    <input type="text" v-bind:value="input.number" />
+    <input type="text" v-bind:value="input.number" onchange="app.input_changed()" />
+    <div>
+      <span>{{ pointer }}</span>
+      <span v-html="math(step_text)"></span>
+    </div>
     <div style="clear: left" />
-    <textarea id="code_text" 
-    v-if="code_mode==0" 
-    onkeypress="input_only(event, '0123456789,/')"
-    class="code">{{ code_text }}</textarea>
+    <textarea id="code_text" v-if="code_mode==0" onkeypress="input_only(event, '0123456789,/')" class="code">{{ code_text }}</textarea>
     <div id="code" v-if="code_mode==1" class="code">
 
       <span v-for="(f,i) in code">  
-      <span v-html="math(`    \\frac{${f[0]}}{${f[1]}}    `)" class="code_frac"></span>        
+      <span v-html="math(`    \\frac{${f[0]}}{${f[1]}}    `)" class="code_frac"></span>
       <span v-if="i+1!=code.length">,</span>
       </span>
 

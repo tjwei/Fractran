@@ -10,25 +10,71 @@ var Fractran = {
         console.log(fracs)
         var errors = fracs.filter(
             s => {
-                var v = /[123456789]\d*\/[123456789]\d*/.test(s);                
+                var v = /[123456789]\d*\/[123456789]\d*/.test(s);
                 return !v;
             })
         console.log(errors);
         return errors;
+    },
+    step(pointer, n, code){
+        if(pointer >= code.length){
+            return [pointer, n, 0, 0]
+        }
+        var f = code[pointer];
+        var p = bigInt(n).times(f[0]);
+        var q = bigInt(f[1]);
+        var r = bigInt.gcd(p,q);
+        p = p.divide(r);
+        q = q.divide(r);
+        if(q.compare(1) == 0){
+            pointer = 0;
+            n = p;
+        }
+        else{
+            pointer = pointer + 1;
+        }
+        return [pointer, n, p, q]
+
     }
+}
+function timeout(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 var app = new Vue({
     el: '#fractran',
+
     methods: {
-        math: s=> katex.renderToString(s),
+        input_changed() {
+            this.input.number = this.value;
+        },
+        async run() {
+            var n = bigInt(this.input.number);
+            var code = this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
+                .map(s => s.split('/').map(n => bigInt(n) ));
+            console.log(code)
+            this.pointer = 0;
+            var pointer=0, n2, p,q
+            while(this.pointer < code.length){
+                var f = code[pointer];
+                [pointer, n2, p, q] = Fractran.step(pointer, n, code);
+                //console.log(pointer, n2.toString(), p.toString(), q.toString())
+                var in_text = q.compare(1)==0 ? "\\in" : "\\not\\in"
+                var text1 = `${n} \\times \\frac{${f[0]}}{${f[1]}} = `
+                this.step_text =   text1+`\\frac{${p}}{${q}} ${in_text} \\mathbb{N}`
+                await timeout(2000);
+                n = n2;
+                this.pointer = pointer
+            }
+        },
+        math: s => katex.renderToString(s),
         toggle_code_mode() {
-            if(this.code_mode == 0){
-                var code_text = $('#code_text').value;            
+            if (this.code_mode == 0) {
+                var code_text = $('#code_text').value;
                 this.code_errors = Fractran.check_error(code_text);
                 if (this.code_errors.length > 0)
-                    return false;                
-                this.code_text = code_text;                
+                    return false;
+                this.code_text = code_text;
             }
             app.code_mode = 1 - app.code_mode;
             return true;
@@ -38,28 +84,23 @@ var app = new Vue({
     data: {
         code_modes: ["edit", "view"],
         code_mode: 0,
-        code_text: "1/2,33/44",
+        code_text: "1/2,33/44,5/7",
         code_errors: [],
         input: {
             base: [],
             base_text: [],
             data: [],
-            number: 0
+            number: 8
         },
-        input: {
-            base: [],
-            base_text: [],
-            sequence: [],
-            number: 0
-        },
-        pointer: 0,
+        pointer: -1,
         state: 0,
+        step_text: "",
         examples: []
     },
     computed: {
         code() {
-        return this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
-                .map(s=>s.split('/'))
+            return this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
+                .map(s => s.split('/'))
         }
 
     }
@@ -74,7 +115,7 @@ async function fetch_examples(file_name) {
 }
 
 var input_only = (e, chars) => {
-    var valid = chars+" \r\n\x00\x08";
+    var valid = chars + " \r\n\x00\x08";
     var k = String.fromCharCode(e.which);
     if (e.altKey || e.metaKey || e.ctrlKey)
         return;
