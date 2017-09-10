@@ -45,24 +45,25 @@ var app = new Vue({
     el: '#fractran',
 
     methods: {
-        input_changed() {
-            this.input.number = this.value;
+        input_changed(e) {
+            this.input.number = e.target.value;
         },
         async run() {
             var n = bigInt(this.input.number);
             var code = this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
-                .map(s => s.split('/').map(n => bigInt(n) ));
+            console.log(code)            
+            code = code.map(s => s.split('/').map(n => bigInt(n) ));
             console.log(code)
             this.pointer = 0;
             var pointer=0, n2, p,q
             while(this.pointer < code.length){
                 var f = code[pointer];
                 [pointer, n2, p, q] = Fractran.step(pointer, n, code);
-                //console.log(pointer, n2.toString(), p.toString(), q.toString())
+                console.log(pointer, n2.toString(), p.toString(), q.toString())
                 var in_text = q.compare(1)==0 ? "\\in" : "\\not\\in"
                 var text1 = `${n} \\times \\frac{${f[0]}}{${f[1]}} = `
-                this.step_text =   text1+`\\frac{${p}}{${q}} ${in_text} \\mathbb{N}`
-                await timeout(2000);
+                this.step_text =   text1+`\\frac{${p}}{${q}} ${in_text} \\mathbb{N}`                
+                await timeout(q.compare(1)==0 ? 2000: 300);
                 n = n2;
                 this.pointer = pointer
             }
@@ -84,7 +85,7 @@ var app = new Vue({
     data: {
         code_modes: ["edit", "view"],
         code_mode: 0,
-        code_text: "1/2,33/44,5/7",
+        code_text: "455/33 11/13 1/11 3/7 11/2 1/3",
         code_errors: [],
         input: {
             base: [],

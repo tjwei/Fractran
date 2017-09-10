@@ -22,7 +22,7 @@
 
 
   <div id="fractran">
-    <input type="text" v-bind:value="input.number" onchange="app.input_changed()" />
+    <input type="text" value="8" onchange="app.input_changed(event)" />
     <div>
       <span>{{ pointer }}</span>
       <span v-html="math(step_text)"></span>
