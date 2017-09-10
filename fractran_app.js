@@ -106,6 +106,9 @@ var app = new Vue({
     el: '#fractran',
 
     methods: {
+        output_base_changed(text){
+            this.output_base = text.match(/\d+/g).map(s=>parseInt(s));
+        },
         input_changed(text) {
             this.code_errors = Fractran.check_input_error(text);
             if (this.code_errors.length > 0)
@@ -116,7 +119,7 @@ var app = new Vue({
         async run() {
             if (!this.input_changed($('#input_input').value)) {
                 return;
-            }
+            } 
             if (this.code_mode == 0)
                 if (!this.toggle_code_mode())
                     return;
@@ -141,12 +144,24 @@ var app = new Vue({
                 var text3 = `\\frac{${fac_math(fac_p)}}{${fac_math(fac_q)}} `
                 var text4 = `${in_text} \\mathbb{N}`
                 this.step_text = text1 + text2 + text3 + text4
-                await timeout(this.current_ok ? 1000 : 200);
+                var speedup = this.speedup;
+                if(speedup < 0.01) speedup=1;
+                if(this.output_base.length>0 && this.current_ok){
+                    console.log(fac_math(fac_p), this.output_base, Object.keys(fac_p))
+                    if(Object.keys(fac_p).map(s=>parseInt(s)).every(k=>{
+                        console.log(k,this.output_base.indexOf(k))
+                    return this.output_base.indexOf(k)>-1})
+                    ){
+                        console.log("add")
+                        this.output_seq.push(`${fac_math(fac_p)}`)
+                    }
+                }
+                await timeout((this.current_ok ? 1000 : 200)/speedup);
                 n = n2;
                 this.pointer = pointer
             }
             var fac = semi_factorization(n, prime_table);
-            this.step_text = `Output=${n}=${fac_math(fac)}`
+            this.step_text = `Output=${fac_math(fac)}`
         },
         math: s => katex.renderToString(s),
         toggle_code_mode() {
@@ -173,16 +188,28 @@ var app = new Vue({
     data: {
         code_modes: ["edit", "view"],
         code_mode: 0,
+        //code_text: "455/33 11/13 1/11 3/7 11/2 1/3",
         code_text: "455/33 11/13 1/11 3/7 11/2 1/3",
         code_errors: [],
         current_ok: true,
         input_number: "8",
+        output_base: [],
+        output_seq: [],
         pointer: -1,
         state: 0,
         step_text: "",
+        speedup: 1,
         examples: []
     },
     computed: {
+        output_seq_math(){
+            var s = this.output_seq.join(" , ");
+            return katex.renderToString(s);
+        },
+        output_base_math(){
+            var s = this.output_base.map(n=>`${n}^{?}`).join(" ");
+            return katex.renderToString(s);
+        },
         input_math() {
             var n = Fractran.parse_input(this.input_number);
             var fac = semi_factorization(n, prime_table);

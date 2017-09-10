@@ -25,7 +25,7 @@
     Input: <input type="text" value="8" onchange="app.input_changed(event.target.value)"
     onkeypress="input_only(event, '0123456789*^')" id="input_input" />
     =<span v-html="input_math"></span>
-    <div>
+    <div class="step">
       <span v-html="step_text_math"></span>
     </div>
     <div style="clear: left" />
@@ -51,6 +51,15 @@
     <button type='button' onclick="app.run()">  
         run
       </button>
+       Speedup:<input value="1" type="text" onchange="app.speedup=parseFloat(event.target.value)"
+       onkeypress="input_only('0123456789.')" />
+      <span> {{ speedup }}X </span> 
+    <div>
+    Output sequence for powers of primes <input type="text" 
+    onchange="app.output_base_changed(event.target.value)" />
+    <span v-html="output_base_math" ></span>:aaa
+    <span v-html="output_seq_math"></span>aaa
+    </div>
     <div v-if="code_errors.length>0">
       List of erros:
       <ul>

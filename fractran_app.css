@@ -11,3 +11,7 @@
 .frac_passed span.katex-html {background-color: #ffe;}
 .frac_current_ok span.katex-html {background-color: #dfd;}
 .frac_current_no span.katex-html {background-color: #fdd;}
+.step {
+    height: 2em;
+    font-size: 160%;
+}
