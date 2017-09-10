@@ -1,10 +1,13 @@
 .code {
     width: 90vw;
-    height: 10em;
+    height: 6em;
     background-color: #eee;
     clear: both;
     display: block;
     font-size: 120%;
 }
-.code_frac { font-size: 200%; }
+.code_frac { font-size: 180%; }
 
+.frac_passed span.katex-html {background-color: #ffe;}
+.frac_current_ok span.katex-html {background-color: #dfd;}
+.frac_current_no span.katex-html {background-color: #fdd;}

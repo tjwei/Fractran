@@ -24,15 +24,20 @@
   <div id="fractran">
     <input type="text" value="8" onchange="app.input_changed(event)" />
     <div>
-      <span>{{ pointer }}</span>
-      <span v-html="math(step_text)"></span>
+      <span v-html="step_text_math"></span>
     </div>
     <div style="clear: left" />
     <textarea id="code_text" v-if="code_mode==0" onkeypress="input_only(event, '0123456789,/')" class="code">{{ code_text }}</textarea>
     <div id="code" v-if="code_mode==1" class="code">
 
       <span v-for="(f,i) in code">  
-      <span v-html="math(`    \\frac{${f[0]}}{${f[1]}}    `)" class="code_frac"></span>
+      <span v-html:once="math(`    \\frac{${f[0]}}{${f[1]}}    `)" 
+        v-bind:class="{
+                code_frac: true,
+                frac_passed: pointer > i,
+                frac_current_ok: pointer == i && current_ok,
+                frac_current_no: pointer == i && !current_ok
+            }"></span>
       <span v-if="i+1!=code.length">,</span>
       </span>
 

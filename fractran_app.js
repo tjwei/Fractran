@@ -16,21 +16,21 @@ var Fractran = {
         console.log(errors);
         return errors;
     },
-    step(pointer, n, code){
-        if(pointer >= code.length){
+    step(pointer, n, code) {
+        if (pointer >= code.length) {
             return [pointer, n, 0, 0]
         }
         var f = code[pointer];
         var p = bigInt(n).times(f[0]);
         var q = bigInt(f[1]);
-        var r = bigInt.gcd(p,q);
+        var r = bigInt.gcd(p, q);
         p = p.divide(r);
         q = q.divide(r);
-        if(q.compare(1) == 0){
+        if (q.compare(1) == 0) {
             pointer = 0;
             n = p;
         }
-        else{
+        else {
             pointer = pointer + 1;
         }
         return [pointer, n, p, q]
@@ -49,21 +49,25 @@ var app = new Vue({
             this.input.number = e.target.value;
         },
         async run() {
+            if (this.code_mode == 0)
+                if (!this.toggle_code_mode())
+                    return;
             var n = bigInt(this.input.number);
             var code = this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
-            console.log(code)            
-            code = code.map(s => s.split('/').map(n => bigInt(n) ));
+            console.log(code)
+            code = code.map(s => s.split('/').map(n => bigInt(n)));
             console.log(code)
             this.pointer = 0;
-            var pointer=0, n2, p,q
-            while(this.pointer < code.length){
+            var pointer = 0, n2, p, q
+            while (this.pointer < code.length) {
                 var f = code[pointer];
                 [pointer, n2, p, q] = Fractran.step(pointer, n, code);
                 console.log(pointer, n2.toString(), p.toString(), q.toString())
-                var in_text = q.compare(1)==0 ? "\\in" : "\\not\\in"
+                this.current_ok = q.compare(1) == 0;
+                var in_text = this.current_ok ? "\\in" : "\\not\\in"
                 var text1 = `${n} \\times \\frac{${f[0]}}{${f[1]}} = `
-                this.step_text =   text1+`\\frac{${p}}{${q}} ${in_text} \\mathbb{N}`                
-                await timeout(q.compare(1)==0 ? 2000: 300);
+                this.step_text = text1 + `\\frac{${p}}{${q}} ${in_text} \\mathbb{N}`
+                await timeout(this.current_ok ? 2000 : 300);
                 n = n2;
                 this.pointer = pointer
             }
@@ -79,6 +83,14 @@ var app = new Vue({
             }
             app.code_mode = 1 - app.code_mode;
             return true;
+        },
+        frac_class(i) {
+            return {
+                code_frac: true,
+                frac_passed: this.pointer > i,
+                frac_current_ok: this.pointer == i && this.current_ok,
+                frac_current_no: this.pointer == i && !this.current_ok
+            }
         }
 
     },
@@ -87,6 +99,7 @@ var app = new Vue({
         code_mode: 0,
         code_text: "455/33 11/13 1/11 3/7 11/2 1/3",
         code_errors: [],
+        current_ok: true,
         input: {
             base: [],
             base_text: [],
@@ -99,11 +112,13 @@ var app = new Vue({
         examples: []
     },
     computed: {
+        step_text_math(){
+            return katex.renderToString(this.step_text)
+        },
         code() {
             return this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
                 .map(s => s.split('/'))
-        }
-
+        },
     }
 })
 
