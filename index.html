@@ -22,7 +22,9 @@
 
 
   <div id="fractran">
-    <input type="text" value="8" onchange="app.input_changed(event)" />
+    <input type="text" value="8" onchange="app.input_changed(event)"
+    onkeypress="input_only(event, '0123456789*^')" id="input_input" />
+    <div v-html="input_math"></div>
     <div>
       <span v-html="step_text_math"></span>
     </div>

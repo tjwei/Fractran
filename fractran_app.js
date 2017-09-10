@@ -112,6 +112,9 @@ var app = new Vue({
         examples: []
     },
     computed: {
+        input_math(){
+            return katex.renderToString(String(this.input.number))
+        },
         step_text_math(){
             return katex.renderToString(this.step_text)
         },
