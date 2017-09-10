@@ -1,8 +1,53 @@
 'use strict';
 var $ = document.querySelector.bind(document);
 var $$ = document.querySelectorAll.bind(document);
-
+var prime_table = [2];
+function construct_prime_table() {
+    for (var i = 3; i < 10000; i += 2)
+        if (bigInt(i).isPrime()) {
+            prime_table.push(i);
+        }
+}
+construct_prime_table();
+function semi_factorization(n0, primes) {
+    var n = bigInt(n0);
+    var i = 0;
+    var rtn = {};
+    while (i < primes.length) {
+        var r = n.divmod(primes[i]);
+        if(r.remainder.eq(0)){
+            rtn[primes[i]] = (rtn[[primes[i]]] || 0) +1;
+            n = r.quotient;
+            if(n.eq(1))
+                break;
+        }
+        else{
+            i+=1;
+        }
+    }
+    if(n.gt(1)){
+        rtn[n]=1;
+    }
+    return rtn;
+}
 var Fractran = {
+    parse_input(input_number) {
+        var text = input_number.replace(/[*\s]+/g, '*')
+        var nums = text.split('*');
+        var factors = nums.map(
+            s => {
+                var v1 = /^[123456789]\d*\^[123456789]\d*$/.test(s);
+                var v2 = /^[123456789]\d*$/.test(s);
+                if (v1) {
+                    var a = s.split('^');
+                    return bigInt(a[0]).pow(a[1]);
+                }
+                if (v2) {
+                    return bigInt(s);
+                }
+            })
+        return factors.reduce((a, b) => a.times(b), bigInt(1))
+    },
     check_input_error(input_number) {
         var text = input_number.replace(/[*\s]+/g, '*')
         var nums = text.split('*');
@@ -57,8 +102,8 @@ var app = new Vue({
             var text = e.target.value;
             this.code_errors = Fractran.check_input_error(text);
             if (this.code_errors.length > 0)
-                    return false;
-            this.input.number = text;
+                return false;
+            this.input_number = text;
         },
         async run() {
             if (this.code_mode == 0)
@@ -112,22 +157,22 @@ var app = new Vue({
         code_text: "455/33 11/13 1/11 3/7 11/2 1/3",
         code_errors: [],
         current_ok: true,
-        input: {
-            base: [],
-            base_text: [],
-            data: [],
-            number: 8
-        },
+        input_number: "8",
         pointer: -1,
         state: 0,
         step_text: "",
         examples: []
     },
     computed: {
-        input_math(){
-            return katex.renderToString(String(this.input.number))
+        input_math() {
+            var n = Fractran.parse_input(this.input_number);
+            var fac = semi_factorization(n, prime_table);
+            var fac_s = Object.entries(fac).map( a =>
+                    String(a[0])+ (a[1]==1 ?"":`^{${a[1]}}`) 
+            )
+            return katex.renderToString(String(n)+"="+fac_s.join(" \\cdot "))
         },
-        step_text_math(){
+        step_text_math() {
             return katex.renderToString(this.step_text)
         },
         code() {
