@@ -3,17 +3,25 @@ var $ = document.querySelector.bind(document);
 var $$ = document.querySelectorAll.bind(document);
 
 var Fractran = {
+    check_input_error(input_number) {
+        var text = input_number.replace(/[*\s]+/g, '*')
+        var nums = text.split('*');
+        var errors = nums.filter(
+            s => {
+                var v1 = /^[123456789]\d*\^[123456789]\d*$/.test(s);
+                var v2 = /^[123456789]\d*$/.test(s);
+                return !(v1 || v2);
+            })
+        return errors;
+    },
     check_error(code_text) {
         var fracs_text = code_text.replace(/[,\s]+/g, ',')
         var fracs = fracs_text.split(',');
-        console.log(fracs_text)
-        console.log(fracs)
         var errors = fracs.filter(
             s => {
-                var v = /[123456789]\d*\/[123456789]\d*/.test(s);
+                var v = /^[123456789]\d*\/[123456789]\d*$/.test(s);
                 return !v;
             })
-        console.log(errors);
         return errors;
     },
     step(pointer, n, code) {
@@ -46,7 +54,11 @@ var app = new Vue({
 
     methods: {
         input_changed(e) {
-            this.input.number = e.target.value;
+            var text = e.target.value;
+            this.code_errors = Fractran.check_input_error(text);
+            if (this.code_errors.length > 0)
+                    return false;
+            this.input.number = text;
         },
         async run() {
             if (this.code_mode == 0)
