@@ -1,5 +1,4 @@
 # Fractran
 Javascript implementation of Fractran interpreter
 
-
-WIP, will available soon.
+WIP, the UI is minimal.
