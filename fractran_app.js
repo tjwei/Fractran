@@ -222,13 +222,17 @@ var app = new Vue({
                         fac_p = fac_p || semi_factorization(p)
                         var fac_n = semi_factorization(n)
                         var fac_q = semi_factorization(q)
-                        var text1 = `${fac_math(fac_n)} `
-                        var text2 = `\\times \\frac{${f[0]}}{${f[1]}} = `
+                        var text1 = katex.renderToString(`${fac_math(fac_n)} `)
+                        var text2 = katex.renderToString("\\times ")
+                        var text_eq = katex.renderToString('=')
+                        var frac_class = this.current_ok? 'frac_current_ok' :'frac_current_ko';
+                        var text_frac =`<span class=${frac_class}>`+
+                        katex.renderToString(` \\frac{${f[0]}}{${f[1]}}`)+"</span>"+text_eq
                         var text3 = this.current_ok ? fac_math(fac_p) : `\\frac{${fac_math(fac_p)}}{${fac_math(fac_q)}} `
                         var text4 = this.current_ok ? '' : "\\not\\in\\mathbb{N}";
                         if ((this.ispausing || this.speedup == 1) && this.current_ok) {
                             this.step_math = katex.renderToString(text3);
-                            this.last_step_math = katex.renderToString(text1 + text2)
+                            this.last_step_math = text1 + text2+text_frac
                             this.show_last_step = true;
                             await this.next_step(500)
                             var el = $('#last_step');
@@ -244,7 +248,7 @@ var app = new Vue({
                             this.show_last_step = false;
                             await this.next_step(500)
                         } else {
-                            this.step_math = katex.renderToString(text1 + text2 + text3 + text4)
+                            this.step_math = text1+text2+text_frac+katex.renderToString(text3 + text4)
                             await this.next_step((this.current_ok ? 1000 : 200) / speedup);
                         }
                         if (this.isrunning == false){
@@ -278,7 +282,7 @@ var app = new Vue({
                 code_frac: true,
                 frac_passed: this.pointer > i,
                 frac_current_ok: this.pointer == i && this.current_ok,
-                frac_current_no: this.pointer == i && !this.current_ok
+                frac_current_ko: this.pointer == i && !this.current_ok
             }
         }
 
