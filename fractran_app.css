@@ -6,16 +6,30 @@
     display: block;
     font-size: 120%;
 }
-.code_frac { font-size: 180%; }
 
-.frac_passed span.katex-html {background-color: #ffe;}
-.frac_current_ok span.katex-html {background-color: #dfd;}
-.frac_current_no span.katex-html {background-color: #fdd;}
+.code_frac {
+    font-size: 180%;
+}
+
+.frac_passed span.katex-html {
+    background-color: #ffe;
+}
+
+.frac_current_ok span.katex-html {
+    background-color: #dfd;
+}
+
+.frac_current_no span.katex-html {
+    background-color: #fdd;
+}
+
 .step {
     height: 2em;
     font-size: 160%;
+    float: left;
 }
-.seq_output{
+
+.seq_output {
     font-size: 130%
 }
 
@@ -23,3 +37,23 @@
     color: red;
     background-color: yellow;
 }
+
+
+span#last_step {
+    display: inline-block;
+    left: 0;
+    /*position: absolute;*/
+}
+span#step_math {
+    display: inline;
+    /*position: absolute;*/
+}
+
+.fade-leave-active {
+    transition: all 0.5s ease-out;
+  }
+
+.fade-leave-to {
+    opacity: 0;
+    margin-left: -100%;
+  }

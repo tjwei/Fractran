@@ -34,7 +34,8 @@
       <span v-html="input_math"></span>
     </div>
     <div class="step">
-      <span v-html="step_text_math"></span>
+        <span id="last_step" v-if="show_last_step" v-html="last_step_math"></span>
+      <span v-html="step_math" id="step_math"></span>
     </div>
     <div style="clear: left" />
     <textarea id="code_text" v-if="code_mode==0" onkeypress="input_only(event, '0123456789,/')" class="code">{{ code_text }}</textarea>
@@ -83,7 +84,6 @@
         </li>
       </ul>
     </div>
-
   </div>
   <script src="fractran_app.js">
   </script>

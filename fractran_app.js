@@ -113,21 +113,20 @@ var app = new Vue({
     el: '#fractran',
 
     methods: {
-        step(){
-            if(!this.isrunning){
+        step() {
+            if (!this.isrunning) {
                 this.run(true)
-            }
-            else{
-                if(this.step_resolve){
+            } else {
+                if (this.step_resolve) {
                     this.step_resolve()
                     this.step_resolve = null;
                 }
             }
 
         },
-        next_step(ms){
-            if(this.ispausing){
-                return new Promise(r => this.step_resolve=r)
+        next_step(ms) {
+            if (this.ispausing) {
+                return new Promise(r => this.step_resolve = r)
             }
             return timeout(ms)
         },
@@ -156,23 +155,23 @@ var app = new Vue({
             this.input_number = text;
             return true;
         },
-        restart(){
+        restart() {
             this.isrunning = false;
             this.ispausing = false;
-            if(this.step_resolve){
+            if (this.step_resolve) {
                 this.step_resolve();
                 this.step_resolve = null;
             }
+            else this.pointer = -1;
 
         },
-        run_or_pause(){
-            if(!this.isrunning){
+        run_or_pause() {
+            if (!this.isrunning) {
                 this.run(false)
-            }
-            else{
+            } else {
                 this.ispausing = !this.ispausing;
-                if(!this.ispausing){
-                    if(this.step_resolve)
+                if (!this.ispausing) {
+                    if (this.step_resolve)
                         this.step_resolve();
                 }
             }
@@ -188,7 +187,7 @@ var app = new Vue({
                     return;
             this.isrunning = true;
             this.ispausing = pausing;
-            this.output_seq = [];                    
+            this.output_seq = [];
             var n = Fractran.parse_input(this.input_number);
             var code = this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
             code = code.map(s => s.split('/').map(n => bigInt(n)));
@@ -203,10 +202,9 @@ var app = new Vue({
                 var fac_p = null;
                 //console.log(pointer, n2.toString(), p.toString(), q.toString())
                 this.current_ok = q.compare(1) == 0;
-                var in_text = this.current_ok ? "\\in" : "\\not\\in"
                 var speedup = this.speedup;
                 if (speedup < 0.01) speedup = 1;
-                if (speedup >= 20000) {
+                if (!this.ispausing && speedup >= 20000) {
                     skip = speedup / 10000;
                 } else skip = 0;
                 if (this.output_base.length > 0 && this.current_ok) {
@@ -227,22 +225,40 @@ var app = new Vue({
                         var text1 = `${fac_math(fac_n)} `
                         var text2 = `\\times \\frac{${f[0]}}{${f[1]}} = `
                         var text3 = this.current_ok ? fac_math(fac_p) : `\\frac{${fac_math(fac_p)}}{${fac_math(fac_q)}} `
-                        var text4 = ` ${in_text} \\mathbb{N}`
-                        this.step_text = text1 + text2 + text3 + text4
-                        await this.next_step((this.current_ok ? 1000 : 200) / speedup);
-                        if(this.isrunning==false)
+                        var text4 = this.current_ok ? '' : "\\not\\in\\mathbb{N}";
+                        if ((this.ispausing || this.speedup == 1) && this.current_ok) {
+                            this.step_math = katex.renderToString(text3);
+                            this.last_step_math = katex.renderToString(text1 + text2)
+                            this.show_last_step = true;
+                            await this.next_step(500)
+                            var el = $('#last_step');
+                            var w = el.clientWidth;
+                            var start_time = new Date().getTime();
+                            var resolve;
+                            var anim = (resolve) => {
+                                var current_time = new Date().getTime() - start_time;
+                                el.style.marginLeft = `-${current_time*w/500}px`
+                                current_time > 500 ? resolve() : requestAnimationFrame(() => anim(resolve))
+                            }
+                            await new Promise(anim)
+                            this.show_last_step = false;
+                            await this.next_step(500)
+                        } else {
+                            this.step_math = katex.renderToString(text1 + text2 + text3 + text4)
+                            await this.next_step((this.current_ok ? 1000 : 200) / speedup);
+                        }
+                        if (this.isrunning == false){
+                            this.pointer=-1;
                             return;
+                        }
                         skip_count = 0;
                     }
                 }
-
-
-
                 n = n2;
                 this.pointer = pointer
             }
             var fac = semi_factorization(n, prime_table);
-            this.step_text = `Output=${fac_math(fac)}`
+            this.step_math = katex.renderToString(`Output=${fac_math(fac)}`)
             this.isrunning = false;
         },
         math: s => katex.renderToString(s),
@@ -280,13 +296,15 @@ var app = new Vue({
         output_seq: [],
         pointer: -1,
         state: 0,
-        step_text: "",
+        show_last_step: false,
+        last_step_math: "",
+        step_math: "",
         speedup: 1,
         examples: []
     },
     computed: {
         output_seq_math() {
-            return this.output_seq.map(s=>katex.renderToString(s)).join(', ')
+            return this.output_seq.map(s => katex.renderToString(s)).join(', ')
         },
         output_base_math() {
             var s = this.output_base.map(n => `${n}^{?}`).join(" ");
@@ -295,11 +313,9 @@ var app = new Vue({
         input_math() {
             var n = Fractran.parse_input(this.input_number);
             var fac = semi_factorization(n, prime_table);
-            return katex.renderToString( (n.lt(1e10) ? String(n) + "=" :'') + fac_math(fac))
+            return katex.renderToString((n.lt(1e10) ? String(n) + "=" : '') + fac_math(fac))
         },
-        step_text_math() {
-            return katex.renderToString(this.step_text)
-        },
+
         code() {
             return this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
                 .map(s => s.split('/'))
@@ -326,55 +342,53 @@ var input_only = (e, chars) => {
 }
 
 
-
-
 var default_examples = [{
-    "title": "3*2",
-    "code_text": "455/33 11/13 1/11 3/7 11/2 1/3",
-    "input": "2^3 * 3^2",
-    "output_base": ""
-},
-{
-    "title": "23+12",
-    "code_text": "2/3",
-    "input": "2^23 * 3^12",
-    "output_base": ""
-},
-{
-    "title": "Generate primes > 1",
-    "code_text": "17/91, 78/85, 19/51, 23/38, 29/33, 77/29, 95/23, 77/19, 1/17, 11/13, 13/11, 15/14, 15/2, 55/1",
-    "input": "2^1",
-    "output_base": "2"
-},
-{
-    "title": "31÷7",
-    "code_text": "91/66, 11/13, 1/33, 85/11, 57/119, 17/19, 11/17, 1/3",
-    "input": "2^31 * 3^7 * 11",
-    "output_base": ""
-},
-{
-    "title": "Hamming weight of 26=0b11010",
-    "code_text": "33/20, 5/11, 13/10, 1/5, 2/3, 10/7, 7/2",
-    "input": "2^26",
-    "output_base": ""
-},
-{
-    "title": "17-5",
-    "code_text": "1/6",
-    "input": "2^17 * 3^5",
-    "output_base": ""
-},
-{
-    "title": "max(4,7)",
-    "code_text": "5/6,5/2,5/3",
-    "input": "2^4 * 3^7",
-    "output_base": ""
-},
-{
-    "title": "6th Fibonacci number",
-    "code_text": "385/39, 77/221, 13/11, 1/13, 51/35, 3/7, 13/2, 1/17",
-    "input": "2^6 * 17",
-    "output_base": ""
-}
+        "title": "3*2",
+        "code_text": "455/33 11/13 1/11 3/7 11/2 1/3",
+        "input": "2^3 * 3^2",
+        "output_base": ""
+    },
+    {
+        "title": "23+12",
+        "code_text": "2/3",
+        "input": "2^23 * 3^12",
+        "output_base": ""
+    },
+    {
+        "title": "Generate primes > 1",
+        "code_text": "17/91, 78/85, 19/51, 23/38, 29/33, 77/29, 95/23, 77/19, 1/17, 11/13, 13/11, 15/14, 15/2, 55/1",
+        "input": "2^1",
+        "output_base": "2"
+    },
+    {
+        "title": "31÷7",
+        "code_text": "91/66, 11/13, 1/33, 85/11, 57/119, 17/19, 11/17, 1/3",
+        "input": "2^31 * 3^7 * 11",
+        "output_base": ""
+    },
+    {
+        "title": "Hamming weight of 26=0b11010",
+        "code_text": "33/20, 5/11, 13/10, 1/5, 2/3, 10/7, 7/2",
+        "input": "2^26",
+        "output_base": ""
+    },
+    {
+        "title": "17-5",
+        "code_text": "1/6",
+        "input": "2^17 * 3^5",
+        "output_base": ""
+    },
+    {
+        "title": "max(4,7)",
+        "code_text": "5/6,5/2,5/3",
+        "input": "2^4 * 3^7",
+        "output_base": ""
+    },
+    {
+        "title": "6th Fibonacci number",
+        "code_text": "385/39, 77/221, 13/11, 1/13, 51/35, 3/7, 13/2, 1/17",
+        "input": "2^6 * 17",
+        "output_base": ""
+    }
 ]
 fetch_examples("example.json")
