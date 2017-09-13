@@ -18,6 +18,11 @@
 
 <body>
   <h1> Fractran interpreter</h1>
+  <select onchange="app.load_example(event.target.value)" id="select_example">
+    <option v-for="(ex,i) in examples" v-bind:value="i">
+      {{ ex.title }}
+    </option>
+    </select>
   <div style="clear: left"> </div>
 
 
@@ -58,7 +63,7 @@
     Sequence output for primes <input type="text" id='output_base_input'
     onchange="app.output_base_changed(event.target.value)" />: <span v-html="output_seq_math"></span>
     </div>
-    <div v-if="code_errors.length>0">
+    <div v-if="code_errors.length>0" class="error">
       List of erros:
       <ul>
         <li v-for="e in code_errors">
@@ -66,9 +71,7 @@
         </li>
       </ul>
     </div>
-    <li v-for="ex in examples">
-      {{ ex }}
-    </li>
+
   </div>
   <script src="fractran_app.js">
   </script>

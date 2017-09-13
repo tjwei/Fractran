@@ -18,3 +18,8 @@
 .seq_output{
     font-size: 130%
 }
+
+.error {
+    color: red;
+    background-color: yellow;
+}
