@@ -113,9 +113,21 @@ var app = new Vue({
     el: '#fractran',
 
     methods: {
+        step(){
+            if(!this.isrunning){
+                this.run(true)
+            }
+            else{
+                if(this.step_resolve){
+                    this.step_resolve()
+                    this.step_resolve = null;
+                }
+            }
+
+        },
         next_step(ms){
             if(this.ispausing){
-                return new Promise(r => this.step_r=r)
+                return new Promise(r => this.step_resolve=r)
             }
             return timeout(ms)
         },
@@ -146,15 +158,23 @@ var app = new Vue({
         },
         restart(){
             this.isrunning = false;
-            this.ispausing = true;
+            this.ispausing = false;
+            if(this.step_resolve){
+                this.step_resolve();
+                this.step_resolve = null;
+            }
 
         },
         run_or_pause(){
             if(!this.isrunning){
-                this.run(0)
+                this.run(false)
             }
             else{
                 this.ispausing = !this.ispausing;
+                if(!this.ispausing){
+                    if(this.step_resolve)
+                        this.step_resolve();
+                }
             }
 
         },
@@ -248,7 +268,7 @@ var app = new Vue({
 
     },
     data: {
-        step_r: null,
+        step_resolve: null,
         isrunning: false,
         ispausing: false,
         code_mode: 0, // 0 Edit code, 1: View code
@@ -352,7 +372,7 @@ var default_examples = [{
 },
 {
     "title": "6th Fibonacci number",
-    "code_text": "385/39, 77/221, 13/11, 1/13, 51/35, 7/3, 13/2, 1/17",
+    "code_text": "385/39, 77/221, 13/11, 1/13, 51/35, 3/7, 13/2, 1/17",
     "input": "2^6 * 17",
     "output_base": ""
 }
