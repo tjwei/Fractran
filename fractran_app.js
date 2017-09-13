@@ -401,7 +401,7 @@ var default_examples = [{
         833/47 53/43 86/41 13/38 23/37 67/31 71/29 83/19 475/17 59/13 41/291 \n\
         1/7 1/11 1/1024 1/97 89/1",
         "input": "2^1",
-        "output_base": ""
+        "output_base": "2"
     }
 ]
 fetch_examples("example.json")
