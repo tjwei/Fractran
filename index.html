@@ -23,11 +23,14 @@
 
 
   <div id="fractran">
+    <div>
+      Choose exampe:
     <select onchange="app.load_example(event.target.value)" v-bind:disabled="isrunning">
           <option v-for="(ex,i) in examples" v-bind:value="i">
             {{ ex.title }}
           </option>
           </select>
+      </div>
     <div>
       Input: <input type="text" value="8" onchange="app.input_changed(event.target.value)" onkeypress="input_only(event, '0123456789*^')"
         id="input_input" /> =
