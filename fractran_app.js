@@ -113,9 +113,14 @@ var app = new Vue({
     el: '#fractran',
 
     methods: {
+        next_step(ms){
+            if(this.ispausing){
+                return new Promise(r => this.step_r=r)
+            }
+            return timeout(ms)
+        },
         load_example(i) {
             this.pointer = -1;
-            console.log("i=", i)
             if (i >= this.examples.length) return;
             if (i < 0) return;
             var ex = this.examples[i];
@@ -139,7 +144,21 @@ var app = new Vue({
             this.input_number = text;
             return true;
         },
-        async run() {
+        restart(){
+            this.isrunning = false;
+            this.ispausing = true;
+
+        },
+        run_or_pause(){
+            if(!this.isrunning){
+                this.run(0)
+            }
+            else{
+                this.ispausing = !this.ispausing;
+            }
+
+        },
+        async run(pausing) {
             this.output_base_changed($('#output_base_input').value);
             if (!this.input_changed($('#input_input').value)) {
                 return;
@@ -147,12 +166,12 @@ var app = new Vue({
             if (this.code_mode == 0)
                 if (!this.toggle_code_mode())
                     return;
+            this.isrunning = true;
+            this.ispausing = pausing;
             this.output_seq = [];                    
             var n = Fractran.parse_input(this.input_number);
             var code = this.code_text.match(/[123456789]\d*\/[123456789]\d*/g)
-            console.log(code)
             code = code.map(s => s.split('/').map(n => bigInt(n)));
-            console.log(code)
             this.pointer = 0;
             var pointer = 0,
                 n2, p, q
@@ -172,9 +191,7 @@ var app = new Vue({
                 } else skip = 0;
                 if (this.output_base.length > 0 && this.current_ok) {
                     fac_p = semi_factorization(p)
-                    console.log(fac_math(fac_p), this.output_base, Object.keys(fac_p))
                     if (Object.keys(fac_p).map(s => parseInt(s)).every(k => {
-                            console.log(k, this.output_base.indexOf(k))
                             return this.output_base.indexOf(k) > -1
                         })) {
                         this.output_seq.push(`${fac_math(fac_p)}`)
@@ -192,7 +209,9 @@ var app = new Vue({
                         var text3 = this.current_ok ? fac_math(fac_p) : `\\frac{${fac_math(fac_p)}}{${fac_math(fac_q)}} `
                         var text4 = ` ${in_text} \\mathbb{N}`
                         this.step_text = text1 + text2 + text3 + text4
-                        await timeout((this.current_ok ? 1000 : 200) / speedup);
+                        await this.next_step((this.current_ok ? 1000 : 200) / speedup);
+                        if(this.isrunning==false)
+                            return;
                         skip_count = 0;
                     }
                 }
@@ -204,6 +223,7 @@ var app = new Vue({
             }
             var fac = semi_factorization(n, prime_table);
             this.step_text = `Output=${fac_math(fac)}`
+            this.isrunning = false;
         },
         math: s => katex.renderToString(s),
         toggle_code_mode() {
@@ -228,8 +248,10 @@ var app = new Vue({
 
     },
     data: {
-        code_modes: ["edit", "view"],
-        code_mode: 0,
+        step_r: null,
+        isrunning: false,
+        ispausing: false,
+        code_mode: 0, // 0 Edit code, 1: View code
         code_text: "",
         code_errors: [],
         current_ok: true,
@@ -244,8 +266,7 @@ var app = new Vue({
     },
     computed: {
         output_seq_math() {
-            var s = this.output_seq.join(" , ");
-            return katex.renderToString(s);
+            return this.output_seq.map(s=>katex.renderToString(s)).join(', ')
         },
         output_base_math() {
             var s = this.output_base.map(n => `${n}^{?}`).join(" ");
@@ -254,7 +275,7 @@ var app = new Vue({
         input_math() {
             var n = Fractran.parse_input(this.input_number);
             var fac = semi_factorization(n, prime_table);
-            return katex.renderToString(String(n) + "=" + fac_math(fac))
+            return katex.renderToString( (n.lt(1e10) ? String(n) + "=" :'') + fac_math(fac))
         },
         step_text_math() {
             return katex.renderToString(this.step_text)
