@@ -25,19 +25,19 @@
   <div id="fractran">
     <div>
       Choose exampe:
-    <select onchange="app.load_example(event.target.value)" v-bind:disabled="isrunning">
+      <select onchange="app.load_example(event.target.value)" v-bind:disabled="isrunning">
           <option v-for="(ex,i) in examples" v-bind:value="i">
             {{ ex.title }}
           </option>
           </select>
-      </div>
+    </div>
     <div>
       Input: <input type="text" value="8" onchange="app.input_changed(event.target.value)" onkeypress="input_only(event, '0123456789*^')"
         id="input_input" /> =
       <span v-html="input_math"></span>
     </div>
     <div class="step">
-        <span id="last_step" v-if="show_last_step" v-html="last_step_math"></span>
+      <span id="last_step" v-if="show_last_step" v-html="last_step_math"></span>
       <span v-html="step_math" id="step_math"></span>
     </div>
     <div style="clear: left" />
@@ -63,18 +63,15 @@
     <button type='button' onclick="app.run_or_pause()">  
         {{ !isrunning || ispausing ? '► Run' : '⏸ Pause'}}
       </button>
-      <button type='button' onclick="app.restart()" v-bind:disabled="isrunning && !ispausing">  
+    <button type='button' onclick="app.restart()" v-bind:disabled="isrunning && !ispausing">  
         ⟲ Restart
       </button>
-        <button type='button' onclick="app.step()" v-bind:disabled="isrunning && !ispausing">  
+    <button type='button' onclick="app.step()" v-bind:disabled="isrunning && !ispausing">  
             ⏯ Step
         </button>
-        <div style='width: 9em; text-align: center; display: inline-block'>
-        <button onclick="if(app.speedup>=10) app.speedup=(app.speedup/10)|0"
-          style='float:left'>⏪</button> 
-      {{ speedup }}X
-        <button style='float:right'
-        onclick="if(app.speedup<1000000) app.speedup*=10">⏩</button></div>
+    <div style='width: 9em; text-align: center; display: inline-block'>
+      <button onclick="if(app.speedup>=10) app.speedup=(app.speedup/10)|0" style='float:left'>⏪</button> {{ speedup }}X
+      <button style='float:right' onclick="if(app.speedup<1000000) app.speedup*=10">⏩</button></div>
     <div class="seq_output">
       Sequence output for primes <input type="text" id='output_base_input' onchange="app.output_base_changed(event.target.value)"
       />: <span v-html="output_seq_math"></span>
@@ -88,11 +85,15 @@
       </ul>
     </div>
   </div>
+
+
+  <p>
+    Source Code: <a href="https://github.com/tjwei/Fractran/">https://github.com/tjwei/Fractran</a>
+  </p>
+
   <script src="fractran_app.js">
   </script>
-  <p>
-   Source Code: <a href="https://github.com/tjwei/Fractran/">https://github.com/tjwei/Fractran</a>
-  </p>
+
 </body>
 
 </html>
